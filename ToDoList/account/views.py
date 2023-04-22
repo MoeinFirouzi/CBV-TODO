@@ -31,7 +31,7 @@ class LoginView(FormView):
             password = form.cleaned_data.get("password")
             user = authenticate(email=email, password=password)
             if user is not None:
-                login(self.request, user)
+                login(request, user)
             else:
                 # No backend authenticated the credentials
                 return self.form_invalid(form)
@@ -42,10 +42,12 @@ class LoginView(FormView):
 
 
 class LogoutView(LoginRequiredMixin, RedirectView):
+    """
+     User Logout View
+    """
     permanent = False
     pattern_name = "account:login"
 
     def get(self, request, *args, **kwargs):
-        logout(self.request)
+        logout(request)
         return super().get(request, *args, **kwargs)
-    

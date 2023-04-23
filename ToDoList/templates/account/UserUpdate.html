@@ -11,4 +11,6 @@ User edit
         {{ form.as_p }}
         <input type="submit" value="Save">
     </form>
+    <br><br>
+    <a href="{% url 'account:user_delete' pk=user.id %}"> <b>DELETE USER</b> </a>
 {% endblock %}

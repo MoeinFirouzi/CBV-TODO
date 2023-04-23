@@ -1,11 +1,32 @@
-from django.http import HttpResponseRedirect
-from django.views.generic.edit import FormView, CreateView, UpdateView
+from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.views.generic.edit import FormView, CreateView,\
+    UpdateView, DeleteView
 from django.views.generic.base import RedirectView
 from account.forms import LoginForm, UserRegisterForm
 from django.urls import reverse_lazy
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from account.models import User
+from django.contrib.auth.mixins import UserPassesTestMixin
+
+
+class UserChangePermissionMixin(UserPassesTestMixin):
+    """
+    It checks if the logged-in user has the permission to change their own
+    account details.
+
+    Methods:
+    - test_func: Checks if the logged-in user's ID matches the user ID in the
+      URL parameters.
+    - handle_no_permission: Returns an HttpResponseForbidden if the user
+      fails the test_func check.
+    """
+
+    def test_func(self):
+        return self.request.user.id == self.kwargs.get("pk")
+
+    def handle_no_permission(self):
+        return HttpResponseForbidden()
 
 
 class LoginView(FormView):
@@ -131,11 +152,9 @@ class UserRegisterView(CreateView):
             return self.form_invalid(form)
 
 
-class UserUpdateView(LoginRequiredMixin, UpdateView):
+class UserUpdateView(UserChangePermissionMixin, LoginRequiredMixin, UpdateView):
     """
-    This module contains a class named UserUpdateView which is
-    a subclass of UpdateView and requires user authentication
-    to access. It updates the user's information using
+    This module updates the user's information using
     the UserRegisterForm and redirects to the index
     page upon successful update.
 
@@ -180,3 +199,20 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
             return self.form_invalid(form)
         else:
             return self.form_invalid(form)
+
+
+class UserDeleteView(UserChangePermissionMixin, LoginRequiredMixin, DeleteView):
+    """
+    A Django class-based view for deleting a user account.
+
+    The UserDeletePermissionMixin ensures that a user can only delete
+    their own account, preventing unauthorized access to other users' data.
+    The LoginRequiredMixin ensures that only authenticated users can
+    access this view.
+
+    Attributes:
+        model: The User model to be deleted.
+        success_url: The URL to redirect to after a successful deletion.
+    """
+    model = User
+    success_url = reverse_lazy("account:login")

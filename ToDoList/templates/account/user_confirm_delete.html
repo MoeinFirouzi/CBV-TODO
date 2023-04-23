@@ -1,0 +1,17 @@
+{% extends "../base.html" %}
+
+{% block title %}
+Delete User
+{% endblock %}
+
+{% block content %}
+<h2>Delete User</h2>
+    <h3>
+        Are Sure to delete User "{{ user.first_name }}"?
+    </h3>
+    <form action="{% url 'account:user_delete' pk=user.id %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="DELETE">
+    </form>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django.http import HttpResponseRedirect
-from django.views.generic.edit import FormView, CreateView
+from django.views.generic.edit import FormView, CreateView, UpdateView
 from django.views.generic.base import RedirectView
 from account.forms import LoginForm, UserRegisterForm
 from django.urls import reverse_lazy
@@ -92,9 +92,6 @@ class UserRegisterView(CreateView):
         create a new User object with the cleaned data from the
         form and redirect to success_url if valid.
 
-        get_context_data(self, **kwargs): Overrides the parent
-        method to insert the form into the context dictionary.
-
         post(self, request, *args, **kwargs): Handles POST requests
         by instantiating a form instance with passed POST variables 
         and checking if it's valid. If valid, it creates a new 
@@ -104,6 +101,7 @@ class UserRegisterView(CreateView):
     form_class = UserRegisterForm
     success_url = reverse_lazy("account:login")
     template_name = "account/UserRegister.html"
+    model = User
 
     def form_valid(self, form):
         """If the form is valid, save the associated model."""
@@ -115,24 +113,70 @@ class UserRegisterView(CreateView):
         )
         return HttpResponseRedirect(self.get_success_url())
 
-    def get_context_data(self, **kwargs):
-        """Insert the form into the context dict."""
-        if "form" not in kwargs:
-            kwargs["form"] = self.get_form()
-        return kwargs
-
     def post(self, request, *args, **kwargs):
+        self.object = None
         form = self.get_form()
         if form.is_valid():
             password1 = form.cleaned_data.get("password1")
             password2 = form.cleaned_data.get("password2")
 
-            if password1 == password2:
+            if password1 is not None and (password1 == password2):
                 email = form.cleaned_data.get("email")
                 if not User.objects.filter(email=email).exists():
                     return self.form_valid(form)
 
             return self.form_invalid(form)
 
+        else:
+            return self.form_invalid(form)
+
+
+class UserUpdateView(LoginRequiredMixin, UpdateView):
+    """
+    This module contains a class named UserUpdateView which is
+    a subclass of UpdateView and requires user authentication
+    to access. It updates the user's information using
+    the UserRegisterForm and redirects to the index
+    page upon successful update.
+
+    Attributes:
+        template_name (str): The name of the template to be rendered.
+        form_class (UserRegisterForm): The form class used for
+        updating user information.
+        model (User): The model class used for updating user information.
+        success_url (reverse_lazy): The URL to redirect to
+        upon successful update.
+
+    Methods:
+        form_valid(self, form):
+            If the form is valid, save the associated model with
+            a new password and redirect to success_url.
+
+        post(self, request, *args, **kwargs):
+            Handle POST requests. If the form is valid and passwords match,
+            call form_valid. Otherwise, call form_invalid.
+    """
+    template_name = "account/UserUpdate.html"
+    form_class = UserRegisterForm
+    model = User
+    success_url = reverse_lazy("todo:index")
+
+    def form_valid(self, form):
+        """If the form is valid, save the associated model."""
+        self.object = form.save(commit=False)
+        self.object.set_password(form.cleaned_data.get("password1"))
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            password1 = form.cleaned_data.get("password1")
+            password2 = form.cleaned_data.get("password2")
+
+            if password1 is not None and (password1 == password2):
+                return self.form_valid(form)
+            return self.form_invalid(form)
         else:
             return self.form_invalid(form)

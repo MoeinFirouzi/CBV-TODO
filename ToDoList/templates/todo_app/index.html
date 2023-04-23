@@ -5,6 +5,7 @@ Index
 {% endblock %}
 
 {% block content %}
-<h1>You ere logged in</h1>
+<h1>Hello {{ user.first_name }}</h1>
+<a href="{% url 'account:user_update' pk=user.id %}">edit</a><br><br>
 <a href="{% url 'account:logout' %}">Logout</a>
 {% endblock %}

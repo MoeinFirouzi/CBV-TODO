@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-
+from django.urls import reverse
 User = get_user_model()
 
 
@@ -13,3 +13,6 @@ class Task(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+    def get_absolute_url(self):
+        return reverse("todo:task_detail", kwargs={"pk":self.id})

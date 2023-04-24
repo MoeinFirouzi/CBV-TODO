@@ -1,0 +1,25 @@
+{% extends "../base.html" %}
+
+{% block title %}
+task creat
+{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 50px;"">
+<a href=" {% url 'todo:tasks' %}" >Back to list</a>
+<hr>
+<table class="table table-bordered">
+    <form action=" {% url 'todo:task_create' %}" method="post" class="form-group">
+        {% csrf_token %}
+    <tr class="table-light" style=""><input class="form-control" type="text" name="title" placeholder="Your Task title"" style=" width:100%;">
+    </tr> 
+    <br>
+    <tr class="table-light" style=""><input class="form-control" type="text" name="description" placeholder="Description"" style=" width:100%;">
+    </tr> 
+    <br>
+    <input class="btn btn-primary" type="submit" value="Add" style="width:30%"></td>
+</form>
+</table> 
+
+</div>
+{% endblock %}

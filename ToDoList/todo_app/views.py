@@ -1,6 +1,10 @@
+from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from todo_app.models import Task
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView
+from django.urls import reverse_lazy
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
@@ -29,5 +33,25 @@ class TaskListView(ListView):
     context_object_name = "task_list"
 
     def get_queryset(self):
-        query_set = Task.objects.filter(owner=self.request.user.id)
+        query_set = Task.objects.filter(
+            owner=self.request.user.id).order_by("-id")
         return query_set
+
+
+class TaskDetailView(DetailView):
+    model = Task
+
+
+class TaskCreateView(CreateView):
+    model = Task
+    fields = ["title", "description"]
+    template_name = 'todo_app/task_create.html'
+    success_url = reverse_lazy("todo:tasks")
+
+    def form_valid(self, form):
+        """If the form is valid, save the associated model."""
+        self.object = form.save(commit=False)
+        self.object.owner = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+    

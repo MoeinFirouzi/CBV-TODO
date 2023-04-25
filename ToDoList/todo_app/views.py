@@ -3,7 +3,7 @@ from django.views.generic import TemplateView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from todo_app.models import Task
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, DeleteView
 from django.urls import reverse_lazy
 
 
@@ -39,10 +39,34 @@ class TaskListView(ListView):
 
 
 class TaskDetailView(DetailView):
+    """
+    This class displays a detailed view of a single Task instance.
+
+    Attributes:
+        model (Task): The model that this DetailView is associated with.
+    """
     model = Task
 
 
 class TaskCreateView(CreateView):
+    """
+    This module contains a class TaskCreateView that inherits from CreateView.
+
+    Attributes:
+    model (Task): A model representing the task.
+        fields (list): A list of fields to be displayed in the form.
+        template_name (str): The name of the HTML template to be used for
+        rendering the view.
+        success_url (str): The URL to redirect to after a successful
+        form submission.
+
+    Methods:
+        form_valid(self, form): Overrides the default implementation of
+        form_valid method. If the form is valid, it saves the associated
+        model and sets its owner as the current user.
+        Then it redirects to success_url.
+
+    """
     model = Task
     fields = ["title", "description"]
     template_name = 'todo_app/task_create.html'
@@ -54,4 +78,17 @@ class TaskCreateView(CreateView):
         self.object.owner = self.request.user
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
-    
+
+
+class TaskDeleteView(DeleteView):
+    """
+    this class-based view allows users to delete a specific Task object.
+    Upon successful deletion, the user is redirected to the main tasks list page.
+
+    Attributes:
+        model (Task): The Task model to be deleted.
+        success_url (str): The URL to redirect to upon successful deletion,
+                      using reverse_lazy to resolve the "todo:tasks" URL pattern.
+    """
+    model = Task
+    success_url = reverse_lazy("todo:tasks")

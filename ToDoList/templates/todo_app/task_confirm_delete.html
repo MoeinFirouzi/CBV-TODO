@@ -1,0 +1,15 @@
+{% extends "../base.html" %}
+
+{% block title %}
+Remove Taks
+{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 50px;"">
+<form method="post">{% csrf_token %}
+    <p>Are you sure you want to delete "{{ object }}"?</p>
+    {{ form }}
+    <input type="submit" value="Confirm">
+</form>
+</div>
+{% endblock %}
